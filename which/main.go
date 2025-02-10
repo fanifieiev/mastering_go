@@ -6,15 +6,15 @@ import (
 	"path/filepath"
 )
 
-func init() {
-	logFile, err := os.OpenFile("which.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal("Failed to open log file", err)
-	}
-	defer logFile.Close()
+// func init() {
+// 	logFile, err := os.OpenFile("which.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+// 	if err != nil {
+// 		log.Fatal("Failed to open log file", err)
+// 	}
+// 	defer logFile.Close()
 
-	log.SetOutput(logFile)
-}
+// 	log.SetOutput(logFile)
+// }
 
 func main() {
 	args := os.Args
@@ -25,6 +25,7 @@ func main() {
 
 	file := args[1]
 	pathList := filepath.SplitList(os.Getenv("PATH"))
+	found := false
 	for _, dir := range pathList {
 		fullPath := filepath.Join(dir, file)
 		fileInfo, err := os.Stat(fullPath)
@@ -33,12 +34,16 @@ func main() {
 			mode := fileInfo.Mode()
 			//is executable?
 			if mode.IsRegular() {
+				if !found {
+					found = true
+				}
 				if mode&0111 != 0 {
 					log.Println(fullPath)
-					return
 				}
 			}
 		}
 	}
-	log.Println("Program not found!")
+	if !found {
+		log.Println("Program not found!")
+	}
 }
